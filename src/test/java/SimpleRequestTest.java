@@ -1,3 +1,5 @@
+import models.UserFromRequest;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import static io.restassured.RestAssured.given;
@@ -9,27 +11,30 @@ public class SimpleRequestTest {
     @Test
     void getSingleUser() {
         given()
+                .spec(SpecForSimpleTest.request)
                 .when()
-                .log().uri()
-                .get("https://reqres.in/api/users/2")
+                .get("/users/2")
                 .then()
                 .log().status()
                 .log().body()
                 .statusCode(200)
-                .body("data.id",is(2));
+                .body("data.id", is(2));
     }
 
     @Test
     void getUnknownUser() {
-        given()
+        UserFromRequest dataUserFromRequest = given()
+                .spec(SpecForSimpleTest.request)
                 .when()
-                .log().uri()
-                .get("https://reqres.in/api/unknown/2")
+                .get("/unknown/2")
                 .then()
+                .body(matchesJsonSchemaInClasspath("SilngleUserSchema.json"))
+                .statusCode(200)
                 .log().status()
                 .log().body()
-                .statusCode(200)
-                .body(matchesJsonSchemaInClasspath("SilngleUserSchema.json"));
+                .extract().as(UserFromRequest.class);
+
+        Assertions.assertEquals("https://reqres.in/#support-heading", dataUserFromRequest.getUserSupport().getUrl().toString());
     }
 
     @Test
@@ -39,9 +44,9 @@ public class SimpleRequestTest {
 
         given()
                 .body(body)
+                .spec(SpecForSimpleTest.request)
                 .when()
-                .log().uri()
-                .post("https://reqres.in/api/users")
+                .post("/users")
                 .then()
                 .log().status()
                 .log().body()
@@ -52,13 +57,13 @@ public class SimpleRequestTest {
     void postNotCreatingUser() {
 
         given()
+                .spec(SpecForSimpleTest.request)
                 .when()
-                .log().uri()
-                .post("https://reqres.in/api/users")
+                .post("/use1rs")
                 .then()
                 .log().status()
                 .log().body()
-                .statusCode(415);
+                .statusCode(201);
     }
 
     @Test
@@ -68,9 +73,9 @@ public class SimpleRequestTest {
 
         given()
                 .body(body)
+                .spec(SpecForSimpleTest.request)
                 .when()
-                .log().uri()
-                .patch("https://reqres.in/api/users/2")
+                .patch("/users/2")
                 .then()
                 .log().status()
                 .log().body()
