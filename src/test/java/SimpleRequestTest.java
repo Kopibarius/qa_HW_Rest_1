@@ -1,10 +1,15 @@
-import models.UserFromRequest;
+import helper.CustomAllureListener;
+import models.UserFromResponse;
+import models.UsersRequest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import static io.qameta.allure.Allure.step;
 import static io.restassured.RestAssured.given;
 import static io.restassured.module.jsv.JsonSchemaValidator.matchesJsonSchemaInClasspath;
 import static org.hamcrest.Matchers.is;
+import static helper.CustomAllureListener.withCustomTemplates;
+
 
 public class SimpleRequestTest {
 
@@ -23,7 +28,9 @@ public class SimpleRequestTest {
 
     @Test
     void getUnknownUser() {
-        UserFromRequest dataUserFromRequest = given()
+        UserFromResponse dataUserFromResponse = step("Отправка запроса", () ->
+                given()
+                .filter(CustomAllureListener.withCustomTemplates())
                 .spec(SpecForSimpleTest.request)
                 .when()
                 .get("/unknown/2")
@@ -32,25 +39,33 @@ public class SimpleRequestTest {
                 .statusCode(200)
                 .log().status()
                 .log().body()
-                .extract().as(UserFromRequest.class);
+                .extract().as(UserFromResponse.class));
 
-        Assertions.assertEquals("https://reqres.in/#support-heading", dataUserFromRequest.getUserSupport().getUrl().toString());
+        step("Проверка ответа", () -> {
+            Assertions.assertEquals("https://reqres.in/#support-heading", dataUserFromResponse.getUserSupport().getUrl().toString());
+                }
+        );
     }
 
     @Test
     void postCreatingUser() {
 
-        String body = "{ \"name\": \"morpheus\", \"job\": \"leader\" }";
+        UsersRequest body = new UsersRequest();
+        body.setName("morpheus");
+        body.setJob("leader");
 
-        given()
-                .body(body)
-                .spec(SpecForSimpleTest.request)
-                .when()
-                .post("/users")
-                .then()
-                .log().status()
-                .log().body()
-                .statusCode(201);
+        step("Отправка запроса", () -> {
+            given()
+                    .filter(CustomAllureListener.withCustomTemplates())
+                    .body(body)
+                    .spec(SpecForSimpleTest.request)
+                    .when()
+                    .post("/users")
+                    .then()
+                    .log().status()
+                    .log().body()
+                    .statusCode(201);
+        });
     }
 
     @Test
@@ -69,9 +84,13 @@ public class SimpleRequestTest {
     @Test
     void patchUser() {
 
-        String body = "{ \"name\": \"morpheus1\", \"job\": \"leader1\" }";
+        UsersRequest body = new UsersRequest();
+        body.setName("morpheus");
+        body.setJob("leader");
 
+        step("Отправка запроса", () -> {
         given()
+                .filter(CustomAllureListener.withCustomTemplates())
                 .body(body)
                 .spec(SpecForSimpleTest.request)
                 .when()
@@ -80,5 +99,6 @@ public class SimpleRequestTest {
                 .log().status()
                 .log().body()
                 .statusCode(200);
+        });
     }
 }

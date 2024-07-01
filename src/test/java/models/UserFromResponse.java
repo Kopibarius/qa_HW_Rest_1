@@ -6,7 +6,7 @@ import lombok.Data;
 
 @Data
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class UserFromRequest {
+public class UserFromResponse {
     @JsonProperty("data")
     private UserData userData;
     @JsonProperty("support")
