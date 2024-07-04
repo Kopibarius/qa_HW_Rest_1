@@ -88,7 +88,7 @@ public class SimpleRequestTest {
         body.setName("morpheus");
         body.setJob("leader");
 
-        step("Отправка запроса", () -> {
+        step("Отправка з апроса", () -> {
         given()
                 .filter(CustomAllureListener.withCustomTemplates())
                 .body(body)
